@@ -9,3 +9,5 @@ weights restoration | present | not implemented (yet)
 mode choice | manual or auto | auto
 metrics | built-in and custom | (val) loss / acc (tested on loss only)
 verbosity | choice available | none to write home about
+
+Requirements: Tensorflow 2+
