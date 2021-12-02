@@ -5,7 +5,7 @@ I needed a way to train a model for many epochs, but stop the training after the
 The differences between EarlyStopping and EarlyStopOnBaseline:
 difference | EarlyStopping | EarlyStopOnBaseline
 --- | --- | ---
-weights restoration | present | not yet implemented
+weights restoration | present | not implemented (yet)
 mode choice | manual or auto | auto
 metrics | built-in and custom | (val) loss / acc (tested on loss only)
 verbosity | choice available | none to write home about
