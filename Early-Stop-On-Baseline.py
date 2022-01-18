@@ -8,7 +8,7 @@ class EarlyStopOnBaseline(Callback):
     (float) delta - how much the monitored value has to decrease/increase (loss/acc); default: 0.01
     (int) patience - how many epochs with no better results to wait before stopping; default: 0
     """
-    def __init__(self, monitor: str='val_loss', baseline: float=0.1, min_delta: float=0.01, patience: int=0):
+    def __init__(self, monitor: str = 'val_loss', baseline: float = 0.1, min_delta: float = 0.01, patience: int = 0):
         super(EarlyStopOnBaseline, self).__init__()
         self.monitor = monitor
         self.baseline = baseline
