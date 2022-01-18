@@ -30,12 +30,12 @@ class EarlyStopOnBaseline(Callback):
             return
 
         self._flag_reached_baseline = monitored_value <= self.baseline or self._flag_reached_baseline
-        flag_better_result = monitored_value <= self.best_value - self.delta
+        flag_better_result = monitored_value <= self._best_value - self.delta
         if self._flag_monitor_accuracy:
             self._flag_reached_baseline = monitored_value >= self.baseline or self._flag_reached_baseline
-            flag_better_result = monitored_value >= self.best_value + self.delta
+            flag_better_result = monitored_value >= self._best_value + self.delta
 
-        if not self.flag_reached_baseline:
+        if not self._flag_reached_baseline:
             return
 
         if flag_better_result:
