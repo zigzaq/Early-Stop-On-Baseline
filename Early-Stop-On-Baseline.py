@@ -4,23 +4,35 @@ from tensorflow.keras.callbacks import Callback
 class EarlyStopOnBaseline(Callback):
     """Callback that terminates training when either acc, loss, val_acc or val_loss reach a specified baseline
     (str) monitor - what to monitor: available for now: acc, loss, val_acc, val_loss; default: val_loss
-    (float) baseline - expected value to reach before monitoring progress by delta; default: 0.1
-    (float) delta - how much the monitored value has to decrease/increase (loss/acc); default: 0.01
-    (int) patience - how many epochs with no better results to wait before stopping; default: 0
+    (float) baseline - expected value to reach before monitoring progress by delta; default: 0.1, range: 0 - 1
+    (float) delta - how much the monitored value has to decrease/increase (loss/acc); default: 0.01, range: >= 0
+    (int) patience - how many epochs with no better results to wait before stopping; default: 0, range: >= 0
+    (bool) restore_best - whether to store and restore best weights; default: True
+    (int) verbose - whether to print out the messages during training; default: 1, values: 0, 1
     """
-    def __init__(self, monitor: str = 'val_loss', baseline: float = 0.1, min_delta: float = 0.01, patience: int = 0):
+    def __init__(self, monitor: str = 'val_loss', baseline: float = 0.1, min_delta: float = 0.01, patience: int = 0,
+                 restore_best: bool = True, verbose: int = 1):
         super(EarlyStopOnBaseline, self).__init__()
+        assert monitor in ['acc', 'loss', 'val_acc', 'val_loss'], self._inform_user_of_error('monitor')
+        assert 0 < baseline < 1, self._inform_user_of_error('baseline')
+        assert min_delta >= 0, self._inform_user_of_error('min_delta')
+        assert patience >= 0, self._inform_user_of_error('patience')
+        assert verbose in [0, 1], self._inform_user_of_error('verbose')
         self.monitor = monitor
         self.baseline = baseline
         self.delta = min_delta
         self.patience = patience
+        # default - best weights will be restored
+        self.restore_weights = restore_best
+        self.verbose = verbose
         self._patience = 0
         self._flag_monitor_accuracy = any([a in monitor for a in ['acc', 'accuracy']])
-        self._best_value = 1e10
         # assume loss is the monitored value
+        self._best_value = 1e10
         if self._flag_monitor_accuracy:
             self._best_value = 1e-10
         self._flag_reached_baseline = False
+        self._best_weights = None
 
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
@@ -29,6 +41,7 @@ class EarlyStopOnBaseline(Callback):
         if monitored_value is None or self.baseline is None:
             return
 
+        # find out if the monitored value improved
         self._flag_reached_baseline = monitored_value <= self.baseline or self._flag_reached_baseline
         flag_better_result = monitored_value <= self._best_value - self.delta
         if self._flag_monitor_accuracy:
@@ -37,7 +50,7 @@ class EarlyStopOnBaseline(Callback):
 
         if not self._flag_reached_baseline:
             return
-
+        # update values if reached new best
         if flag_better_result:
             self._best_value = monitored_value
             self._patience = 0
@@ -47,10 +60,20 @@ class EarlyStopOnBaseline(Callback):
         if self._patience < self.patience:
             return
 
-        print(f'\nEpoch {epoch}: Terminating training.')
+        if self.verbose:
+            print(f'\tEpoch {epoch}: Terminating training.')
         self.model.stop_training = True
+
+    @staticmethod
+    def _inform_user_of_error(variable: str):
+        RANGES = {'monitor': ['acc', 'loss', 'val_acc', 'val_loss'],
+                  'baseline': '(0;1)',
+                  'min_delta': '[0;+inf)',
+                  'patience': '[0;+inf)',
+                  'verbose': '0, 1',
+                  }
+        return f'Incorrect value. Expected value in range: {RANGES[variable]}.'
 
 
 if __name__ == '__main__':
-    stop = EarlyStopOnBaseline()
-    print(stop)
+    print(0)
