@@ -50,12 +50,20 @@ class EarlyStopOnBaseline(Callback):
 
         if not self._flag_reached_baseline:
             return
+        
         # update values if reached new best
         if flag_better_result:
             self._best_value = monitored_value
             self._patience = 0
+            if self.restore_weights:
+                self._best_weights = self.model.get_weights()
             return
 
+        # restore best weights
+        if self.restore_weights:
+            self.model.set_weights(self._best_weights)
+            if self.verbose:
+                print(f'\tRestoring weights for {self.monitor} @ {round(self._best_value, 4)}.')
         self._patience += 1
         if self._patience < self.patience:
             return
